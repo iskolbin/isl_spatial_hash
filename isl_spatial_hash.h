@@ -29,6 +29,12 @@
 #define ISLSH_REALLOC(ctx,ptr,size) realloc((ptr),(size))
 #endif
 
+#ifndef ISLSH_STATIC
+#define ISLSH_API extern
+#else
+#define ISLSH_API static
+#endif
+
 struct islsh_bucket {
 	int x;
 	int y;
@@ -52,15 +58,15 @@ struct islsh_spatial_hash {
 	int *released_ids;
 };
 
-struct islsh_spatial_hash *islsh_create(float cell_size, int spatial_buckets);
-void islsh_destroy(struct islsh_spatial_hash *self);
-int islsh_put(struct islsh_spatial_hash *self, float x, float y, float w, float h);
-int islsh_del(struct islsh_spatial_hash *self, int id);
+ISLSH_API struct islsh_spatial_hash *islsh_create(float cell_size, int spatial_buckets);
+ISLSH_API void islsh_destroy(struct islsh_spatial_hash *self);
+ISLSH_API int islsh_put(struct islsh_spatial_hash *self, float x, float y, float w, float h);
+ISLSH_API int islsh_del(struct islsh_spatial_hash *self, int id);
 #define islsh_contains(self,id) (((self)->id_counter>(id))&&((self)->xywhs[(id)].x==(self)->xywhs[(id)].x))
 #define islsh_update(self,id,x,y,w,h) {if (islsh_del((self),(id)) == 0) islsh_put((self),(x),(y),(w),(h));}
 
-int islsh_get_bucket_len(struct islsh_spatial_hash *self, int x, int y);
-int islsh_get_intersections_len(struct islsh_spatial_hash *self, int id);
+ISLSH_API int islsh_intersections_len(struct islsh_spatial_hash *self, int id);
+ISLSH_API int islsh_bucket_len(struct islsh_spatial_hash *self, int x, int y);
 
 #endif
 
@@ -270,11 +276,11 @@ void islsh_destroy(struct islsh_spatial_hash *self) {
 	}	
 }
 
-int islsh_get_bucket_ids_len(struct islsh_spatial_hash *self, int x, int y) {
+int islsh_bucket_len(struct islsh_spatial_hash *self, int x, int y) {
 	return islsh_stbds_arrlen(islsh_get_ids(self, x, y));
 }
 
-int islsh_get_intersections_len(struct islsh_spatial_hash *self, int id) {
+int islsh_intersections_len(struct islsh_spatial_hash *self, int id) {
 	return islsh_contains(self,id) ? islsh_stbds_arrlen(self->intersections[id]) : 0;
 }
 
